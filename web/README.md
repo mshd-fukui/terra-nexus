@@ -1,19 +1,45 @@
 # web — 地図アプリ（Next.js + MapLibre GL JS）
 
-流域と自然資本を YAMAP の流域地図のように表示する Web フロントエンド。
-成果物タイル（PMTiles）と統計 JSON を Cloudflare R2 から直読みする。静的配信・サーバー不要。
+流域と自然資本を YAMAP の流域地図のように表示するフロントエンド。
+パイプラインが出力した流域 GeoJSON と統計 JSON を読み込んで地図・パネルに描画する。
 画面要件は [`../docs/requirements-v1.md`](../docs/requirements-v1.md) 第 6 章。
 
-## 構成（予定）
+## セットアップ・実行
 
-- Next.js + TypeScript
-- MapLibre GL JS + `pmtiles` プロトコルプラグイン
-- レイヤ: 陰影起伏（ラスタ PMTiles）→ 流域境界 → 自然資本コロプレス
-- 流域クリックで詳細パネル（土地被覆構成・炭素蓄積・緑被率・保水）
+```bash
+cd web
+npm install
+npm run dev      # http://localhost:3000
+# 本番ビルド: npm run build && npm start
+```
 
-## 配信
+## 実装済み
+
+- **Next.js 14（App Router）+ TypeScript**。
+- **MapLibre GL JS** による地図（`components/WatershedMap.tsx`）:
+  - 背景のみで起動し、load 後に**地形陰影**（AWS Terrain Tiles）と**流域ポリゴン**を追加。
+    地形タイルの取得可否に関わらず流域が描画される構成。
+  - 流域クリックで選択ハイライト（feature-state）。
+- **サイドパネル**（`components/StatsPanel.tsx`）: 面積・森林率・緑被率・炭素蓄積/密度の
+  KPI と、ESA WorldCover 標準配色による土地被覆構成バー・凡例。
+- データは `public/data/<region>/` の `watershed.geojson` / `stats.json` を読み込む
+  （パイプライン成果物のコピー。将来は Cloudflare R2 配信の PMTiles へ差し替え）。
+
+## 検証状況
+
+- `npm run build` 通過（型・lint・コンパイル）。
+- 実データ（鴨川流域）でサイドパネルが正しく描画されることを確認済み
+  （面積 185.6 km²・森林率 77%・炭素 3.75 Mt C・土地被覆バー）。
+- 地図タイルの実表示はローカル/Vercel で確認する。外部地形タイルへの到達が必要なため、
+  ネットワーク制限のある環境では地形が空表示になる（コードの不具合ではない）。
+
+## 配信（予定）
 
 - ホスト: Vercel Hobby（個人開発フェーズ）
-- タイル/データ: Cloudflare R2 + CDN
+- タイル/データ: Cloudflare R2 + CDN（PMTiles 化後）
 
-> 実装はこれから。`create-next-app` での初期化は初回実装時に行う。
+## 未実装（次段階）
+
+- 複数流域（サブ流域）の色分け＝自然資本コロプレス（現状は単一流域）。
+- 指標セレクタ（炭素密度 / 緑被率 で塗り分け切替）。
+- PMTiles 化（陰影・流域を R2 から range 読み）。
