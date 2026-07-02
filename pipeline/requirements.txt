@@ -1,0 +1,13 @@
+# Terra Nexus pipeline — Python 依存
+# 注: pysheds 0.5 は numpy 2.x で削除された np.in1d を使うため
+#     terranexus.compat が np.isin で補う（numpy のピン留めは不要）。
+numpy>=1.26
+rasterio>=1.3
+geopandas>=0.14
+shapely>=2.0
+pysheds>=0.4
+pyproj>=3.5
+pyyaml>=6.0
+
+# 開発用
+pytest>=7.0

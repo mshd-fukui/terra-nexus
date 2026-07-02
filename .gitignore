@@ -6,6 +6,8 @@
 *.tiff
 *.geojson
 !docs/**/*.geojson
+# 参照用のサンプル成果物は追跡する（DEM 等の *.tif は除外のまま）
+!pipeline/outputs/**/*.geojson
 
 # --- Python (pipeline) ---
 __pycache__/

@@ -1,0 +1,19 @@
+# InVEST Carbon Storage モデル方式の炭素プール係数（Mg C/ha）
+# 4 プール: c_above(地上部) + c_below(地下部) + c_soil(土壌) + c_dead(枯死有機物)
+# lucode は ESA WorldCover v200 のクラス値。
+#
+# 注意: 下記は温帯（日本相当）の代表値であり暫定。要件書の未解決論点のとおり、
+#       日本向けには森林簿・J-クレジット制度の係数等で補正することを想定する。
+#       出典の桁感: 温帯林の炭素蓄積は概ね 150-300 Mg C/ha（地上+土壌）。
+lucode,lulc_name,c_above,c_below,c_soil,c_dead,source
+10,Tree cover,120,30,90,10,"IPCC 2006 GL temperate forest (representative)"
+20,Shrubland,20,10,60,3,"IPCC 2006 GL shrubland (representative)"
+30,Grassland,6,8,70,2,"IPCC 2006 GL grassland (representative)"
+40,Cropland,5,5,55,1,"IPCC 2006 GL cropland (representative)"
+50,Built-up,2,1,30,0,"urban green residual (representative)"
+60,Bare/sparse,1,1,20,0,"representative"
+70,Snow/ice,0,0,0,0,"n/a"
+80,Permanent water,0,0,0,0,"n/a"
+90,Herbaceous wetland,15,10,120,5,"wetland high soil carbon (representative)"
+95,Mangroves,0,0,0,0,"n/a (not present in target region)"
+100,Moss/lichen,2,2,40,0,"representative"

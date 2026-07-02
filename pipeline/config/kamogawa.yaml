@@ -1,0 +1,21 @@
+# 鴨川流域（Kamogawa basin）— v1 パイロット地域設定
+name: kamogawa
+label: 鴨川流域
+
+# 出力先（成果物）
+output_dir: outputs/kamogawa
+
+dem:
+  source: copernicus-glo30          # AWS Open Data（認証不要, 30m）
+  tiles: [N34E135, N35E135]         # 流域が緯度 34.9-35.2 に跨るため 2 枚をモザイク
+  clip_bbox: [135.68, 34.90, 135.90, 35.25]   # W, S, E, N
+
+delineation:
+  # 流出点（outlet）＝ 桂川との合流点付近。流域を一意に定めるため明示指定する。
+  # （最大集水セルの自動採用では隣接する桂川本流を掴んでしまうため）
+  outlet: [135.744, 34.940]         # lon, lat
+  snap_accum_threshold: 500         # この集積量以上のセルへ流出点をスナップ
+
+landcover:
+  source: esa-worldcover-2021-v200  # CC BY 4.0, 10m
+  tile: N33E135                     # 3 度グリッド（京都を含む）
