@@ -1,0 +1,38 @@
+# --- 生成物・大容量データ（Git 管理外） ---
+/data/
+*.pmtiles
+*.mbtiles
+*.tif
+*.tiff
+*.geojson
+!docs/**/*.geojson
+
+# --- Python (pipeline) ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.env
+.ipynb_checkpoints/
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# --- Node / Next.js (web) ---
+node_modules/
+.next/
+out/
+.vercel/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# --- OS / エディタ ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
