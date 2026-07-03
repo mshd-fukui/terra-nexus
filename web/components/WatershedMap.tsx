@@ -7,6 +7,7 @@ import maplibregl, {
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { FeatureCollection } from "geojson";
+import { dataUrl } from "@/lib/basePath";
 
 interface Props {
   region: string;
@@ -93,7 +94,7 @@ export default function WatershedMap({ region, onSelect }: Props) {
       addHillshade(map);
 
       const fc: FeatureCollection = await fetch(
-        `/data/${region}/watershed.geojson`
+        dataUrl(`/data/${region}/watershed.geojson`)
       ).then((r) => r.json());
 
       map.addSource("watershed", {

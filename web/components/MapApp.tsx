@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import type { RegionStats } from "@/lib/types";
+import { dataUrl } from "@/lib/basePath";
 import StatsPanel from "./StatsPanel";
 
 // maplibre-gl は window に触れるため SSR を無効化して読み込む
@@ -18,7 +19,7 @@ export default function MapApp() {
   const [selected, setSelected] = useState(false);
 
   useEffect(() => {
-    fetch(`/data/${REGION}/stats.json`)
+    fetch(dataUrl(`/data/${REGION}/stats.json`))
       .then((r) => r.json())
       .then(setStats)
       .catch(() => setStats(null));
