@@ -15,8 +15,13 @@ pip install -r requirements.txt
 ## 実行
 
 ```bash
-python -m terranexus.run --config config/kamogawa.yaml
+python -m terranexus.run --config config/kamogawa.yaml       # 鴨川流域（京都）
+python -m terranexus.run --config config/fukuoka_naka.yaml   # 那珂川流域（福岡）
 ```
+
+**地域の追加** = 設定 YAML を 1 つ足すだけ（DEM タイル・流出点・WorldCover タイル等）。
+成果物を `web/public/data/<name>/` にコピーし、`web/public/data/regions.json` に 1 行追加すると
+Web の地域切替に現れる。
 
 - DEM タイル（Copernicus GLO-30, 認証不要）は初回に `<repo>/data/raw/` へ自動取得・キャッシュ。
 - 成果物は `outputs/<region>/` に出力:

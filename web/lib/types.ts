@@ -1,5 +1,10 @@
 // パイプラインが出力する成果物の型
 
+export interface RegionRef {
+  name: string;
+  label: string;
+}
+
 export interface LandCoverEntry {
   lucode: number;
   name: string;

@@ -1,0 +1,23 @@
+# 那珂川流域（Naka River basin, 福岡）— 2 番目のパイロット地域
+# 資料のグリーンボーナス（福岡）と接続する地域。config を追加するだけで別流域を算定できる
+# ことの実証も兼ねる。
+name: fukuoka_naka
+label: 那珂川流域（福岡）
+
+output_dir: outputs/fukuoka_naka
+
+dem:
+  source: copernicus-glo30
+  tiles: [N33E130]                  # 那珂川流域は 1 タイルに収まる
+  clip_bbox: [130.32, 33.38, 130.50, 33.64]   # W, S, E, N
+
+delineation:
+  # 流出点＝博多湾への河口付近（本流）。集水量が集中する河口は snap 閾値を高めに取り、
+  # 隣接する室見川・御笠川ではなく那珂川本流に確実にスナップさせる。
+  outlet: [130.376, 33.627]         # lon, lat
+  snap_accum_threshold: 30000
+  subbasin_accum_threshold: 2500    # 流域が鴨川より小さいため閾値をやや下げる
+
+landcover:
+  source: esa-worldcover-2021-v200
+  tile: N33E129                     # 3 度グリッド（福岡を含む）

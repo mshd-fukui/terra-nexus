@@ -21,8 +21,10 @@ npm run dev      # http://localhost:3000
     と**サブ流域**を追加。
   - **サブ流域コロプレス**: 指標（炭素密度／森林率／緑被率）で塗り分け。凡例つき。
   - サブ流域クリックで選択ハイライト＋詳細表示（feature-state）。
-- **サイドパネル**（`components/StatsPanel.tsx`）: 指標セレクタ・カラー凡例・流域全体サマリ、
-  選択サブ流域の面積/森林率/炭素と、ESA WorldCover 標準配色の土地被覆構成。
+- **サイドパネル**（`components/StatsPanel.tsx`）: 地域セレクタ・指標セレクタ・カラー凡例・
+  流域全体サマリ、選択サブ流域の詳細と、ESA WorldCover 標準配色の土地被覆構成。
+- **地域切替**: `public/data/regions.json` の一覧から選択。地域を変えると地図を作り直し、
+  その地域の PMTiles・サマリを読み込む（現在: 鴨川流域・那珂川流域）。
 - データは `public/data/<region>/` の **`watersheds.pmtiles`**（ベクタタイル）を
   pmtiles プロトコルで range 読みし、`region.json`（サマリ・指標レンジ・bbox）を fetch する。
   PMTiles は単一ファイルで、静的ホスティング（GitHub Pages / Cloudflare R2）がそのまま配信できる。

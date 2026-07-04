@@ -1,0 +1,58 @@
+{
+  "region": {
+    "name": "fukuoka_naka",
+    "label": "那珂川流域（福岡）"
+  },
+  "generated": "2026-07-04",
+  "geometry": {
+    "outlet_snapped": {
+      "lon": 130.3775,
+      "lat": 33.62833
+    },
+    "area_ha": 12214.5,
+    "area_km2": 122.15,
+    "subbasin_count": 19,
+    "bbox": [
+      130.36778,
+      33.39194,
+      130.46583,
+      33.62833
+    ]
+  },
+  "totals": {
+    "forest_ratio": 0.6096,
+    "green_cover_ratio": 0.663,
+    "carbon_storage_mg_c": 2042372.0,
+    "carbon_density_mg_c_per_ha": 167.2,
+    "habitat_quality": 0.631,
+    "water_retention": 0.33
+  },
+  "indicator_ranges": {
+    "forest_ratio": {
+      "min": 0.025,
+      "max": 0.987
+    },
+    "green_cover_ratio": {
+      "min": 0.034,
+      "max": 0.998
+    },
+    "carbon_density_mg_c_per_ha": {
+      "min": 33.063,
+      "max": 247.708
+    },
+    "habitat_quality": {
+      "min": 0.011,
+      "max": 0.992
+    },
+    "water_retention": {
+      "min": 0.078,
+      "max": 0.46
+    }
+  },
+  "sources": {
+    "dem": "copernicus-glo30",
+    "landcover": "esa-worldcover-2021-v200",
+    "carbon_method": "InVEST Carbon (4-pool lookup)"
+  },
+  "notes": "自然資本は生物物理量。炭素・保水・生息地質の係数は温帯代表値（暫定）。サブ流域は流路合流点で分割。金額換算・NDVI は後続バージョンで追加予定。"
+}

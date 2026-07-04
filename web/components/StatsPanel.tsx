@@ -2,12 +2,16 @@
 
 import type {
   RegionSummary,
+  RegionRef,
   SubBasinProps,
   IndicatorKey,
 } from "@/lib/types";
 import { INDICATORS, RAMP, WORLDCOVER_COLORS } from "@/lib/types";
 
 interface Props {
+  regions: RegionRef[];
+  regionName: string;
+  onRegion: (name: string) => void;
   region: RegionSummary | null;
   indicator: IndicatorKey;
   onIndicator: (k: IndicatorKey) => void;
@@ -20,27 +24,58 @@ function fmtIndicator(key: IndicatorKey, v: number): string {
 }
 
 export default function StatsPanel({
+  regions,
+  regionName,
+  onRegion,
   region,
   indicator,
   onIndicator,
   selected,
 }: Props) {
-  if (!region) {
-    return (
-      <div className="panel">
-        <h1>Terra Nexus</h1>
-        <div className="sub">流域自然資本マップ</div>
+  return (
+    <div className="panel">
+      <div className="brand">Terra Nexus — 流域自然資本マップ</div>
+      <select
+        className="region-select"
+        value={regionName}
+        onChange={(e) => onRegion(e.target.value)}
+      >
+        {regions.map((r) => (
+          <option key={r.name} value={r.name}>
+            {r.label}
+          </option>
+        ))}
+      </select>
+      {!region ? (
         <div className="hint">データを読み込んでいます…</div>
-      </div>
-    );
-  }
+      ) : (
+        <RegionBody
+          region={region}
+          indicator={indicator}
+          onIndicator={onIndicator}
+          selected={selected}
+        />
+      )}
+    </div>
+  );
+}
 
+function RegionBody({
+  region,
+  indicator,
+  onIndicator,
+  selected,
+}: {
+  region: RegionSummary;
+  indicator: IndicatorKey;
+  onIndicator: (k: IndicatorKey) => void;
+  selected: SubBasinProps | null;
+}) {
   const def = INDICATORS.find((d) => d.key === indicator)!;
   const range = region.indicator_ranges[indicator];
 
   return (
-    <div className="panel">
-      <h1>{region.region.label}</h1>
+    <>
       <div className="sub">
         {region.geometry.area_km2} km²・{region.geometry.subbasin_count}
         サブ流域・生成 {region.generated}
@@ -81,7 +116,7 @@ export default function StatsPanel({
       )}
 
       <div className="notes">{region.notes}</div>
-    </div>
+    </>
   );
 }
 
