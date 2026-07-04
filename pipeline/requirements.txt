@@ -10,5 +10,10 @@ pyproj>=3.5
 scipy>=1.10          # 生息地質の距離減衰（畳み込み）に使用
 pyyaml>=6.0
 
+# タイル生成（任意）
+rio-rgbify>=1.0        # DEM -> terrain-RGB（地形 PMTiles）
+pmtiles>=3.2           # pmtiles-convert（MBTiles -> PMTiles）
+# ベクタ PMTiles は tippecanoe（別途 PATH に導入）を使用
+
 # 開発用
 pytest>=7.0

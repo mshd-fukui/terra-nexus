@@ -21,6 +21,7 @@ python -m terranexus.run --config config/kamogawa.yaml
 - DEM タイル（Copernicus GLO-30, 認証不要）は初回に `<repo>/data/raw/` へ自動取得・キャッシュ。
 - 成果物は `outputs/<region>/` に出力:
   - `watersheds.pmtiles` — サブ流域ベクタタイル（Web が range 読みする配信用）
+  - `terrain.pmtiles` — 地形陰影用の terrain-RGB ラスタタイル（DEM 由来。外部依存の排除）
   - `watersheds.geojson` — サブ流域ポリゴン（各 Feature に自然資本の属性。PMTiles の元）
   - `region.json` — 地域サマリ（合計・面積加重平均・指標レンジ・bbox）
   - `<region>_dem.tif` — クリップ済み DEM（Git 管理外）
@@ -35,7 +36,7 @@ python -m terranexus.run --config config/kamogawa.yaml
 | 4 | `carbon.py` | InVEST Carbon 方式（4 プール係数）で炭素蓄積量・密度を算定 |
 | 5 | `habitat.py` | InVEST Habitat Quality 方式で生息地質（生物多様性の代理）を算定 |
 | 6 | `aggregate.py` | サブ流域 GeoJSON（`watersheds.geojson`）＋ 地域サマリ（`region.json`）を書き出し |
-| 7 | `tiles.py` | GeoJSON をベクタ PMTiles（`watersheds.pmtiles`）へ変換（tippecanoe。未導入ならスキップ） |
+| 7 | `tiles.py` | GeoJSON をベクタ PMTiles（`watersheds.pmtiles`）へ、DEM を地形 PMTiles（`terrain.pmtiles`）へ変換 |
 
 指標: 炭素密度・生息地質・森林率・緑被率。生息地質は市街地/農地を攪乱要因とした
 距離減衰で自然の質（0〜1）を評価する（新規データ不要）。サブ流域の分割数は

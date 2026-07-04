@@ -43,8 +43,7 @@ export default function MapApp() {
         selected={selected}
       />
       <div className="credit">
-        DEM: Copernicus GLO-30 ／ 土地被覆: © ESA WorldCover ／ 地形: AWS Terrain
-        Tiles
+        DEM・地形: Copernicus GLO-30 ／ 土地被覆: © ESA WorldCover
       </div>
     </div>
   );

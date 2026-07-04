@@ -17,8 +17,8 @@ npm run dev      # http://localhost:3000
 
 - **Next.js 14（App Router）+ TypeScript**。
 - **MapLibre GL JS** による地図（`components/WatershedMap.tsx`）:
-  - 背景のみで起動し、load 後に**地形陰影**（AWS Terrain Tiles）と**サブ流域**を追加。
-    地形タイルの取得可否に関わらず流域が描画される構成。
+  - 背景のみで起動し、load 後に**地形陰影**（自前の terrain-RGB PMTiles。DEM 由来・外部依存なし）
+    と**サブ流域**を追加。
   - **サブ流域コロプレス**: 指標（炭素密度／森林率／緑被率）で塗り分け。凡例つき。
   - サブ流域クリックで選択ハイライト＋詳細表示（feature-state）。
 - **サイドパネル**（`components/StatsPanel.tsx`）: 指標セレクタ・カラー凡例・流域全体サマリ、

@@ -35,17 +35,18 @@ const BASE_STYLE: maplibregl.StyleSpecification = {
   ],
 };
 
-function addHillshade(map: MLMap) {
+// 自前の terrain-RGB PMTiles（DEM 由来）で動的陰影を描く。外部タイルに依存しない。
+function addHillshade(map: MLMap, region: string) {
   if (map.getSource("terrain-dem")) return;
+  const url = `pmtiles://${window.location.origin}${dataUrl(
+    `/data/${region}/terrain.pmtiles`
+  )}`;
   map.addSource("terrain-dem", {
     type: "raster-dem",
-    tiles: [
-      "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png",
-    ],
-    encoding: "terrarium",
-    tileSize: 256,
-    maxzoom: 14,
-    attribution: "AWS Terrain Tiles",
+    url,
+    encoding: "mapbox",
+    tileSize: 512,
+    attribution: "Copernicus GLO-30",
   });
   map.addLayer({
     id: "hillshade",
@@ -99,7 +100,7 @@ export default function WatershedMap({
 
     map.on("load", () => {
       map.resize();
-      addHillshade(map);
+      addHillshade(map, region);
 
       const url = `pmtiles://${window.location.origin}${dataUrl(
         `/data/${region}/watersheds.pmtiles`
