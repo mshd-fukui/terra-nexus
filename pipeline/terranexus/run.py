@@ -25,6 +25,7 @@ from .aggregate import (
     build_region,
     write_region,
     write_watersheds,
+    write_subbasins_summary,
 )
 from .tiles import build_pmtiles, build_terrain_pmtiles
 from .geo import geographic_area_ha
@@ -75,6 +76,7 @@ def main() -> None:
         )
 
     write_watersheds(subs, work / "watersheds.geojson")
+    write_subbasins_summary(subs, work / "subbasins.json")
     build_pmtiles(work / "watersheds.geojson", work / "watersheds.pmtiles")
     build_terrain_pmtiles(dem_path, work / "terrain.pmtiles")
     region = build_region(cfg, dl, subs)

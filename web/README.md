@@ -25,6 +25,9 @@ npm run dev      # http://localhost:3000
   流域全体サマリ、選択サブ流域の詳細と、ESA WorldCover 標準配色の土地被覆構成。
 - **地域切替**: `public/data/regions.json` の一覧から選択。地域を変えると地図を作り直し、
   その地域の PMTiles・サマリを読み込む（現在: 鴨川流域・那珂川流域）。
+- **TNFD レポート**（`app/report/page.tsx`）: `/report?region=<name>` で、地域の自然資本を
+  TNFD LEAP 構造（所在・評価・重要度・開示）で提示する印刷可能な文書。`subbasins.json` と
+  `region.json` を読み、ブラウザの印刷から PDF 保存できる（バックエンド不要）。
 - データは `public/data/<region>/` の **`watersheds.pmtiles`**（ベクタタイル）を
   pmtiles プロトコルで range 読みし、`region.json`（サマリ・指標レンジ・bbox）を fetch する。
   PMTiles は単一ファイルで、静的ホスティング（GitHub Pages / Cloudflare R2）がそのまま配信できる。

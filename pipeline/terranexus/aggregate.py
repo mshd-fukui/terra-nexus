@@ -73,6 +73,13 @@ def write_watersheds(subs: List[SubBasinStats], path: Path) -> None:
     path.write_text(json.dumps(fc, ensure_ascii=False), encoding="utf-8")
 
 
+def write_subbasins_summary(subs: List[SubBasinStats], path: Path) -> None:
+    """幾何なしの per-サブ流域プロパティ配列（レポート・表用の軽量データ）。"""
+    data = [subbasin_feature(s)["properties"] for s in subs]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+
+
 def _range(values: List[float]) -> Dict[str, float]:
     return {"min": round(min(values), 3), "max": round(max(values), 3)}
 

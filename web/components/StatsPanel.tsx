@@ -7,6 +7,7 @@ import type {
   IndicatorKey,
 } from "@/lib/types";
 import { INDICATORS, RAMP, WORLDCOVER_COLORS } from "@/lib/types";
+import { BASE_PATH } from "@/lib/basePath";
 
 interface Props {
   regions: RegionRef[];
@@ -46,6 +47,14 @@ export default function StatsPanel({
           </option>
         ))}
       </select>
+      <a
+        className="report-link"
+        href={`${BASE_PATH}/report/?region=${regionName}`}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        TNFD レポートを開く →
+      </a>
       {!region ? (
         <div className="hint">データを読み込んでいます…</div>
       ) : (
