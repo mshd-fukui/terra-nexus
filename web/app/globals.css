@@ -23,6 +23,10 @@ body {
 .map {
   position: absolute;
   inset: 0;
+  /* MapLibre は同じ要素に .maplibregl-map を付与し position:relative を上書きするため、
+     inset だけでは高さが 0 に潰れる。明示的に幅・高さ 100% を与えて親（.app=100vh）を満たす。 */
+  width: 100%;
+  height: 100%;
 }
 
 /* --- サイドパネル --- */
