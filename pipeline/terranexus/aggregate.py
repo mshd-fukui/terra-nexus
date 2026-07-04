@@ -26,6 +26,7 @@ class SubBasinStats:
     area_ha: float
     land_cover: LandCover
     carbon: CarbonResult
+    habitat_quality: float
 
 
 def _land_cover_list(lc: LandCover) -> List[Dict[str, Any]]:
@@ -54,6 +55,7 @@ def subbasin_feature(s: SubBasinStats) -> Dict[str, Any]:
             "green_cover_ratio": round(s.land_cover.green_ratio, 4),
             "carbon_density_mg_c_per_ha": round(s.carbon.density_mg_c_per_ha, 1),
             "carbon_storage_mg_c": round(s.carbon.total_mg_c, 0),
+            "habitat_quality": round(s.habitat_quality, 3),
             "land_cover": _land_cover_list(s.land_cover),
         },
         "geometry": mapping(s.geometry),
@@ -110,6 +112,12 @@ def build_region(
             )
             if total_area_ha
             else 0.0,
+            "habitat_quality": round(
+                sum(s.habitat_quality * s.area_ha for s in subs) / total_area_ha,
+                3,
+            )
+            if total_area_ha
+            else 0.0,
         },
         # Web のコロプレス配色レンジ（サブ流域間の指標の分布）
         "indicator_ranges": {
@@ -120,6 +128,7 @@ def build_region(
             "carbon_density_mg_c_per_ha": _range(
                 [s.carbon.density_mg_c_per_ha for s in subs]
             ),
+            "habitat_quality": _range([s.habitat_quality for s in subs]),
         },
         "sources": {
             "dem": cfg.dem.source,

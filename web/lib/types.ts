@@ -16,6 +16,7 @@ export interface SubBasinProps {
   green_cover_ratio: number;
   carbon_density_mg_c_per_ha: number;
   carbon_storage_mg_c: number;
+  habitat_quality: number;
   land_cover: LandCoverEntry[];
 }
 
@@ -34,6 +35,7 @@ export interface RegionSummary {
     green_cover_ratio: number;
     carbon_storage_mg_c: number;
     carbon_density_mg_c_per_ha: number;
+    habitat_quality: number;
   };
   indicator_ranges: Record<IndicatorKey, { min: number; max: number }>;
   sources: Record<string, string>;
@@ -42,9 +44,10 @@ export interface RegionSummary {
 
 // コロプレスで塗り分け可能な指標
 export type IndicatorKey =
+  | "carbon_density_mg_c_per_ha"
+  | "habitat_quality"
   | "forest_ratio"
-  | "green_cover_ratio"
-  | "carbon_density_mg_c_per_ha";
+  | "green_cover_ratio";
 
 export interface IndicatorDef {
   key: IndicatorKey;
@@ -55,6 +58,7 @@ export interface IndicatorDef {
 
 export const INDICATORS: IndicatorDef[] = [
   { key: "carbon_density_mg_c_per_ha", label: "炭素密度", unit: "Mg C/ha", ratio: false },
+  { key: "habitat_quality", label: "生息地質", unit: "指数", ratio: false },
   { key: "forest_ratio", label: "森林率", unit: "%", ratio: true },
   { key: "green_cover_ratio", label: "緑被率", unit: "%", ratio: true },
 ];

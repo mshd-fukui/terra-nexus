@@ -17,7 +17,8 @@
     "forest_ratio": 0.7734,
     "green_cover_ratio": 0.796,
     "carbon_storage_mg_c": 3753924.0,
-    "carbon_density_mg_c_per_ha": 202.2
+    "carbon_density_mg_c_per_ha": 202.2,
+    "habitat_quality": 0.751
   },
   "indicator_ranges": {
     "forest_ratio": {
@@ -31,6 +32,10 @@
     "carbon_density_mg_c_per_ha": {
       "min": 56.547,
       "max": 249.419
+    },
+    "habitat_quality": {
+      "min": 0.093,
+      "max": 0.999
     }
   },
   "sources": {

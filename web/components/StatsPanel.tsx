@@ -14,10 +14,6 @@ interface Props {
   selected: SubBasinProps | null;
 }
 
-function fmt(n: number): string {
-  return n.toLocaleString("ja-JP");
-}
-
 function fmtIndicator(key: IndicatorKey, v: number): string {
   const def = INDICATORS.find((d) => d.key === key)!;
   return def.ratio ? `${Math.round(v * 100)}%` : `${v}`;
@@ -99,11 +95,7 @@ function RegionTotals({ region }: { region: RegionSummary }) {
       <div className="section-title">流域全体</div>
       <div className="kpis">
         <Kpi label="森林率" value={`${Math.round(t.forest_ratio * 100)}`} unit="%" />
-        <Kpi
-          label="緑被率"
-          value={`${Math.round(t.green_cover_ratio * 100)}`}
-          unit="%"
-        />
+        <Kpi label="生息地質" value={t.habitat_quality.toFixed(2)} unit="指数" />
         <Kpi
           label="炭素蓄積"
           value={(t.carbon_storage_mg_c / 1e6).toFixed(2)}
@@ -125,17 +117,13 @@ function SubBasinDetail({ sub }: { sub: SubBasinProps }) {
       <div className="section-title">サブ流域 #{sub.id}</div>
       <div className="kpis">
         <Kpi label="面積" value={`${sub.area_km2}`} unit="km²" />
-        <Kpi label="森林率" value={`${Math.round(sub.forest_ratio * 100)}`} unit="%" />
+        <Kpi label="生息地質" value={sub.habitat_quality.toFixed(2)} unit="指数" />
         <Kpi
           label="炭素密度"
           value={`${sub.carbon_density_mg_c_per_ha}`}
           unit="Mg C/ha"
         />
-        <Kpi
-          label="炭素蓄積"
-          value={fmt(Math.round(sub.carbon_storage_mg_c))}
-          unit="Mg C"
-        />
+        <Kpi label="森林率" value={`${Math.round(sub.forest_ratio * 100)}`} unit="%" />
       </div>
 
       <div className="section-title">土地被覆構成</div>

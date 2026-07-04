@@ -30,9 +30,11 @@ python -m terranexus.run --config config/kamogawa.yaml
 | 2 | `delineate.py` | pysheds で水文補正 → 流向 → 集積 → **指定流出点**の集水域を導出。さらに流路合流点で**サブ流域に分割** |
 | 3 | `landcover.py` | ESA WorldCover を流域 bbox で 1 回読み込み、サブ流域ごとにゾーン集計 |
 | 4 | `carbon.py` | InVEST Carbon 方式（4 プール係数）で炭素蓄積量・密度を算定 |
-| 5 | `aggregate.py` | サブ流域 GeoJSON（`watersheds.geojson`）＋ 地域サマリ（`region.json`）を書き出し |
+| 5 | `habitat.py` | InVEST Habitat Quality 方式で生息地質（生物多様性の代理）を算定 |
+| 6 | `aggregate.py` | サブ流域 GeoJSON（`watersheds.geojson`）＋ 地域サマリ（`region.json`）を書き出し |
 
-派生指標: 緑被率・森林率（`landcover.py`）。サブ流域の分割数は
+指標: 炭素密度・生息地質・森林率・緑被率。生息地質は市街地/農地を攪乱要因とした
+距離減衰で自然の質（0〜1）を評価する（新規データ不要）。サブ流域の分割数は
 `config` の `subbasin_accum_threshold` で調整（値を下げると分割が細かくなる）。
 
 ## パイロット結果（鴨川流域）

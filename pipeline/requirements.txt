@@ -7,6 +7,7 @@ geopandas>=0.14
 shapely>=2.0
 pysheds>=0.4
 pyproj>=3.5
+scipy>=1.10          # 生息地質の距離減衰（畳み込み）に使用
 pyyaml>=6.0
 
 # 開発用

@@ -18,6 +18,7 @@ from .acquire import prepare_dem
 from .delineate import delineate
 from .landcover import WorldCover, zonal_class_areas
 from .carbon import estimate, load_coefficients
+from .habitat import habitat_quality_raster, zonal_mean as habitat_zonal_mean
 from .aggregate import (
     SubBasinStats,
     build_region,
@@ -50,6 +51,7 @@ def main() -> None:
 
     wc = WorldCover.load(cfg, dl.basin)
     coeffs = load_coefficients(_PKG_ROOT / "data_tables" / "carbon_pools.csv")
+    habitat_q = habitat_quality_raster(wc)  # 生息地質ラスタ（1 回計算）
 
     subs = []
     for sb in dl.subbasins:
@@ -62,6 +64,7 @@ def main() -> None:
                 area_ha=geographic_area_ha(sb.geometry),
                 land_cover=lc,
                 carbon=carbon,
+                habitat_quality=habitat_zonal_mean(habitat_q, wc, sb.geometry),
             )
         )
 
