@@ -1,19 +1,35 @@
 "use client";
 
-import type { RegionStats } from "@/lib/types";
-import { WORLDCOVER_COLORS } from "@/lib/types";
+import type {
+  RegionSummary,
+  SubBasinProps,
+  IndicatorKey,
+} from "@/lib/types";
+import { INDICATORS, RAMP, WORLDCOVER_COLORS } from "@/lib/types";
 
 interface Props {
-  stats: RegionStats | null;
-  selected: boolean;
+  region: RegionSummary | null;
+  indicator: IndicatorKey;
+  onIndicator: (k: IndicatorKey) => void;
+  selected: SubBasinProps | null;
 }
 
 function fmt(n: number): string {
   return n.toLocaleString("ja-JP");
 }
 
-export default function StatsPanel({ stats, selected }: Props) {
-  if (!stats) {
+function fmtIndicator(key: IndicatorKey, v: number): string {
+  const def = INDICATORS.find((d) => d.key === key)!;
+  return def.ratio ? `${Math.round(v * 100)}%` : `${v}`;
+}
+
+export default function StatsPanel({
+  region,
+  indicator,
+  onIndicator,
+  selected,
+}: Props) {
+  if (!region) {
     return (
       <div className="panel">
         <h1>Terra Nexus</h1>
@@ -23,56 +39,108 @@ export default function StatsPanel({ stats, selected }: Props) {
     );
   }
 
-  const nc = stats.natural_capital;
-  const lc = nc.land_cover;
+  const def = INDICATORS.find((d) => d.key === indicator)!;
+  const range = region.indicator_ranges[indicator];
 
   return (
     <div className="panel">
-      <h1>{stats.region.label}</h1>
+      <h1>{region.region.label}</h1>
       <div className="sub">
-        流域面積 {stats.geometry.area_km2} km²・生成 {stats.generated}
+        {region.geometry.area_km2} km²・{region.geometry.subbasin_count}
+        サブ流域・生成 {region.generated}
       </div>
 
-      {!selected && (
-        <div className="hint">
-          地図上の流域（緑）をクリックすると、その流域の自然資本の詳細が表示されます。
-        </div>
+      {/* 指標セレクタ */}
+      <div className="section-title">色分けの指標</div>
+      <div className="seg">
+        {INDICATORS.map((d) => (
+          <button
+            key={d.key}
+            className={d.key === indicator ? "seg-btn on" : "seg-btn"}
+            onClick={() => onIndicator(d.key)}
+          >
+            {d.label}
+          </button>
+        ))}
+      </div>
+
+      {/* カラー凡例 */}
+      <div
+        className="legend-bar"
+        style={{
+          background: `linear-gradient(90deg, ${RAMP.join(",")})`,
+        }}
+      />
+      <div className="legend-scale">
+        <span>{fmtIndicator(indicator, range.min)}</span>
+        <span>{def.unit === "%" ? "" : def.unit}</span>
+        <span>{fmtIndicator(indicator, range.max)}</span>
+      </div>
+
+      {/* 選択サブ流域 or 全体サマリ */}
+      {selected ? (
+        <SubBasinDetail sub={selected} />
+      ) : (
+        <RegionTotals region={region} />
       )}
 
+      <div className="notes">{region.notes}</div>
+    </div>
+  );
+}
+
+function RegionTotals({ region }: { region: RegionSummary }) {
+  const t = region.totals;
+  return (
+    <>
+      <div className="hint">
+        地図上のサブ流域をクリックすると、その流域の詳細が表示されます。
+      </div>
+      <div className="section-title">流域全体</div>
       <div className="kpis">
-        <div className="kpi">
-          <div className="label">森林率</div>
-          <div className="value">
-            {Math.round(nc.forest_ratio * 100)}
-            <span className="unit">%</span>
-          </div>
-        </div>
-        <div className="kpi">
-          <div className="label">緑被率</div>
-          <div className="value">
-            {Math.round(nc.green_cover_ratio * 100)}
-            <span className="unit">%</span>
-          </div>
-        </div>
-        <div className="kpi">
-          <div className="label">炭素蓄積</div>
-          <div className="value">
-            {(nc.carbon_storage_mg_c / 1e6).toFixed(2)}
-            <span className="unit">Mt C</span>
-          </div>
-        </div>
-        <div className="kpi">
-          <div className="label">炭素密度</div>
-          <div className="value">
-            {nc.carbon_density_mg_c_per_ha}
-            <span className="unit">Mg C/ha</span>
-          </div>
-        </div>
+        <Kpi label="森林率" value={`${Math.round(t.forest_ratio * 100)}`} unit="%" />
+        <Kpi
+          label="緑被率"
+          value={`${Math.round(t.green_cover_ratio * 100)}`}
+          unit="%"
+        />
+        <Kpi
+          label="炭素蓄積"
+          value={(t.carbon_storage_mg_c / 1e6).toFixed(2)}
+          unit="Mt C"
+        />
+        <Kpi
+          label="炭素密度"
+          value={`${t.carbon_density_mg_c_per_ha}`}
+          unit="Mg C/ha"
+        />
+      </div>
+    </>
+  );
+}
+
+function SubBasinDetail({ sub }: { sub: SubBasinProps }) {
+  return (
+    <>
+      <div className="section-title">サブ流域 #{sub.id}</div>
+      <div className="kpis">
+        <Kpi label="面積" value={`${sub.area_km2}`} unit="km²" />
+        <Kpi label="森林率" value={`${Math.round(sub.forest_ratio * 100)}`} unit="%" />
+        <Kpi
+          label="炭素密度"
+          value={`${sub.carbon_density_mg_c_per_ha}`}
+          unit="Mg C/ha"
+        />
+        <Kpi
+          label="炭素蓄積"
+          value={fmt(Math.round(sub.carbon_storage_mg_c))}
+          unit="Mg C"
+        />
       </div>
 
       <div className="section-title">土地被覆構成</div>
       <div className="lc-bar" role="img" aria-label="土地被覆構成">
-        {lc.map((e) => (
+        {sub.land_cover.map((e) => (
           <span
             key={e.lucode}
             title={`${e.name} ${(e.share * 100).toFixed(1)}%`}
@@ -84,21 +152,39 @@ export default function StatsPanel({ stats, selected }: Props) {
         ))}
       </div>
       <div className="lc-legend">
-        {lc.map((e) => (
-          <div className="lc-row" key={e.lucode}>
-            <span
-              className="swatch"
-              style={{ background: WORLDCOVER_COLORS[e.lucode] ?? "#ccc" }}
-            />
-            <span className="nm">{e.name}</span>
-            <span className="pct">
-              {(e.share * 100).toFixed(1)}% ・ {fmt(Math.round(e.area_ha))} ha
-            </span>
-          </div>
-        ))}
+        {sub.land_cover
+          .filter((e) => e.share >= 0.01)
+          .map((e) => (
+            <div className="lc-row" key={e.lucode}>
+              <span
+                className="swatch"
+                style={{ background: WORLDCOVER_COLORS[e.lucode] ?? "#ccc" }}
+              />
+              <span className="nm">{e.name}</span>
+              <span className="pct">{(e.share * 100).toFixed(1)}%</span>
+            </div>
+          ))}
       </div>
+    </>
+  );
+}
 
-      <div className="notes">{stats.notes}</div>
+function Kpi({
+  label,
+  value,
+  unit,
+}: {
+  label: string;
+  value: string;
+  unit: string;
+}) {
+  return (
+    <div className="kpi">
+      <div className="label">{label}</div>
+      <div className="value">
+        {value}
+        <span className="unit">{unit}</span>
+      </div>
     </div>
   );
 }

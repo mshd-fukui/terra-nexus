@@ -62,7 +62,6 @@ def estimate(lc: LandCover, coeffs: Dict[int, CarbonPools]) -> CarbonResult:
         by_class[code] = mg
         total += mg
     density = total / lc.total_ha if lc.total_ha else 0.0
-    print(f"[carbon] total={total:.0f} Mg C  density={density:.1f} Mg C/ha")
     return CarbonResult(
         total_mg_c=total, density_mg_c_per_ha=density, by_class_mg_c=by_class
     )

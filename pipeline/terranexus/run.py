@@ -3,8 +3,9 @@
 使い方:
     python -m terranexus.run --config config/kamogawa.yaml
 
-段階: DEM 取得/クリップ → 流域導出 → 土地被覆 → 炭素算定 → 集計・書き出し。
-成果物は <output_dir>/watershed.geojson と <output_dir>/stats.json。
+段階: DEM 取得/クリップ → 流域導出・サブ流域分割 → 土地被覆（1 回読み）→
+各サブ流域のゾーン集計・炭素算定 → 集計・書き出し。
+成果物は <output_dir>/watersheds.geojson と <output_dir>/region.json。
 """
 from __future__ import annotations
 
@@ -15,9 +16,15 @@ from . import compat  # noqa: F401  numpy2 互換シム
 from .config import RegionConfig
 from .acquire import prepare_dem
 from .delineate import delineate
-from .landcover import classify
+from .landcover import WorldCover, zonal_class_areas
 from .carbon import estimate, load_coefficients
-from .aggregate import build_stats, write_geojson, write_stats
+from .aggregate import (
+    SubBasinStats,
+    build_region,
+    write_region,
+    write_watersheds,
+)
+from .geo import geographic_area_ha
 
 _PKG_ROOT = Path(__file__).resolve().parent.parent  # pipeline/
 
@@ -40,19 +47,35 @@ def main() -> None:
     print(f"=== {cfg.label} ({cfg.name}) ===")
     dem_path = prepare_dem(cfg, raw_dir, work / f"{cfg.name}_dem.tif")
     dl = delineate(cfg, dem_path)
-    lc = classify(cfg, dl.basin)
-    coeffs = load_coefficients(_PKG_ROOT / "data_tables" / "carbon_pools.csv")
-    carbon = estimate(lc, coeffs)
 
-    write_geojson(cfg, dl, work / "watershed.geojson")
-    stats = build_stats(cfg, dl, lc, carbon)
-    write_stats(stats, work / "stats.json")
+    wc = WorldCover.load(cfg, dl.basin)
+    coeffs = load_coefficients(_PKG_ROOT / "data_tables" / "carbon_pools.csv")
+
+    subs = []
+    for sb in dl.subbasins:
+        lc = zonal_class_areas(wc, sb.geometry)
+        carbon = estimate(lc, coeffs)
+        subs.append(
+            SubBasinStats(
+                id=sb.id,
+                geometry=sb.geometry,
+                area_ha=geographic_area_ha(sb.geometry),
+                land_cover=lc,
+                carbon=carbon,
+            )
+        )
+
+    write_watersheds(subs, work / "watersheds.geojson")
+    region = build_region(cfg, dl, subs)
+    write_region(region, work / "region.json")
 
     print(f"[done] outputs in {work}")
+    t = region["totals"]
     print(
-        f"  area={stats['geometry']['area_km2']} km2  "
-        f"forest={stats['natural_capital']['forest_ratio']:.0%}  "
-        f"carbon={stats['natural_capital']['carbon_storage_mg_c']:.0f} Mg C"
+        f"  subbasins={region['geometry']['subbasin_count']}  "
+        f"area={region['geometry']['area_km2']} km2  "
+        f"forest={t['forest_ratio']:.0%}  "
+        f"carbon={t['carbon_storage_mg_c']:.0f} Mg C"
     )
 
 

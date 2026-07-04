@@ -15,6 +15,9 @@ delineation:
   # （最大集水セルの自動採用では隣接する桂川本流を掴んでしまうため）
   outlet: [135.744, 34.940]         # lon, lat
   snap_accum_threshold: 500         # この集積量以上のセルへ流出点をスナップ
+  # サブ流域分割の細かさ。この集積量以上を「流路」とみなし、合流点ごとに分割する。
+  # 値を小さくすると流路が密になり分割数が増える（例: 3000→約20分割）。
+  subbasin_accum_threshold: 3000
 
 landcover:
   source: esa-worldcover-2021-v200  # CC BY 4.0, 10m

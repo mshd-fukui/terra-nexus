@@ -18,8 +18,8 @@ python -m terranexus.run --config config/kamogawa.yaml
 
 - DEM タイル（Copernicus GLO-30, 認証不要）は初回に `<repo>/data/raw/` へ自動取得・キャッシュ。
 - 成果物は `outputs/<region>/` に出力:
-  - `watershed.geojson` — 流域ポリゴン（EPSG:4326）
-  - `stats.json` — 流域の自然資本サマリ
+  - `watersheds.geojson` — サブ流域ポリゴン（各 Feature に自然資本の属性）
+  - `region.json` — 地域サマリ（合計・面積加重平均・指標レンジ）
   - `<region>_dem.tif` — クリップ済み DEM（Git 管理外）
 
 ## 実装済みの処理段階
@@ -27,12 +27,13 @@ python -m terranexus.run --config config/kamogawa.yaml
 | 段階 | モジュール | 内容 |
 |---|---|---|
 | 1 | `acquire.py` | Copernicus GLO-30 DEM のモザイク・クリップ |
-| 2 | `delineate.py` | pysheds で水文補正 → 流向 → 集積 → **指定流出点**の集水域を導出・ポリゴン化 |
-| 3 | `landcover.py` | ESA WorldCover を流域でクリップし、クラス別面積を集計 |
+| 2 | `delineate.py` | pysheds で水文補正 → 流向 → 集積 → **指定流出点**の集水域を導出。さらに流路合流点で**サブ流域に分割** |
+| 3 | `landcover.py` | ESA WorldCover を流域 bbox で 1 回読み込み、サブ流域ごとにゾーン集計 |
 | 4 | `carbon.py` | InVEST Carbon 方式（4 プール係数）で炭素蓄積量・密度を算定 |
-| 5 | `aggregate.py` | 流域 GeoJSON ＋ 自然資本サマリ JSON を書き出し |
+| 5 | `aggregate.py` | サブ流域 GeoJSON（`watersheds.geojson`）＋ 地域サマリ（`region.json`）を書き出し |
 
-派生指標: 緑被率・森林率（`landcover.py`）。
+派生指標: 緑被率・森林率（`landcover.py`）。サブ流域の分割数は
+`config` の `subbasin_accum_threshold` で調整（値を下げると分割が細かくなる）。
 
 ## パイロット結果（鴨川流域）
 
@@ -53,7 +54,6 @@ python -m terranexus.run --config config/kamogawa.yaml
 
 ## 未実装（次段階）
 
-- **サブ流域分割**（YAMAP 的に複数流域を色分け）: 現状は指定流出点の単一流域のみ。
 - **NDVI・緑被率の衛星由来精緻化**（Sentinel-2）。
 - **流域保水指標**（InVEST Water Yield）。
 - **金額換算**（係数の妥当性検証込み）。

@@ -1,7 +1,7 @@
-"""土地被覆（ESA WorldCover）の流域内クリップと集計。
+"""土地被覆（ESA WorldCover）の読み込みとゾーン集計。
 
-WorldCover タイルを S3 から COG の窓読み（/vsicurl/）で参照し、
-流域ポリゴンでマスクしてクラス別面積を求める。
+WorldCover タイルを S3 から COG の窓読み（/vsicurl/）で流域 bbox 一括取得し、
+サブ流域ごとにポリゴンでゾーン集計してクラス別面積を求める（HTTP 読みは 1 回）。
 """
 from __future__ import annotations
 
@@ -10,7 +10,8 @@ from typing import Dict
 
 import numpy as np
 import rasterio
-from rasterio.mask import mask as rio_mask
+from rasterio.features import geometry_mask
+from rasterio.windows import from_bounds
 from shapely.geometry import mapping
 from shapely.geometry.base import BaseGeometry
 
@@ -42,6 +43,24 @@ GREEN_CLASSES = {10, 20, 30, 40, 90, 95, 100}
 
 
 @dataclass
+class WorldCover:
+    """流域 bbox でクリップした WorldCover ラスタ（メモリ上）。"""
+
+    array: np.ndarray
+    transform: object
+
+    @staticmethod
+    def load(cfg: RegionConfig, basin: BaseGeometry) -> "WorldCover":
+        url = _WC_URL.format(tile=cfg.landcover.tile)
+        with rasterio.open(url) as wc:
+            window = from_bounds(*basin.bounds, wc.transform)
+            arr = wc.read(1, window=window)
+            tr = wc.window_transform(window)
+        print(f"[landcover] WorldCover loaded shape={arr.shape}")
+        return WorldCover(array=arr, transform=tr)
+
+
+@dataclass
 class LandCover:
     area_ha_by_class: Dict[int, float] = field(default_factory=dict)
 
@@ -65,16 +84,15 @@ class LandCover:
         return self.area_ha_by_class.get(10, 0.0) / self.total_ha
 
 
-def classify(cfg: RegionConfig, basin: BaseGeometry) -> LandCover:
-    url = _WC_URL.format(tile=cfg.landcover.tile)
-    with rasterio.open(url) as wc:
-        out, out_tr = rio_mask(wc, [mapping(basin)], crop=True)
-    lc = out[0]
-
-    lat = basin.centroid.y
-    px_ha = pixel_area_ha(out_tr, lat)
-
-    vals, counts = np.unique(lc[lc != 0], return_counts=True)
+def zonal_class_areas(wc: WorldCover, geom: BaseGeometry) -> LandCover:
+    """ポリゴン内の WorldCover クラス別面積（ha）を求める。"""
+    inside = geometry_mask(
+        [mapping(geom)], out_shape=wc.array.shape, transform=wc.transform,
+        invert=True,
+    )
+    lc = wc.array[inside]
+    lc = lc[lc != 0]
+    px_ha = pixel_area_ha(wc.transform, geom.centroid.y)
+    vals, counts = np.unique(lc, return_counts=True)
     area = {int(v): float(c) * px_ha for v, c in zip(vals.tolist(), counts.tolist())}
-    print(f"[landcover] classes={len(area)} total_ha={sum(area.values()):.0f}")
     return LandCover(area_ha_by_class=area)

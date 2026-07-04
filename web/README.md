@@ -17,12 +17,13 @@ npm run dev      # http://localhost:3000
 
 - **Next.js 14（App Router）+ TypeScript**。
 - **MapLibre GL JS** による地図（`components/WatershedMap.tsx`）:
-  - 背景のみで起動し、load 後に**地形陰影**（AWS Terrain Tiles）と**流域ポリゴン**を追加。
+  - 背景のみで起動し、load 後に**地形陰影**（AWS Terrain Tiles）と**サブ流域**を追加。
     地形タイルの取得可否に関わらず流域が描画される構成。
-  - 流域クリックで選択ハイライト（feature-state）。
-- **サイドパネル**（`components/StatsPanel.tsx`）: 面積・森林率・緑被率・炭素蓄積/密度の
-  KPI と、ESA WorldCover 標準配色による土地被覆構成バー・凡例。
-- データは `public/data/<region>/` の `watershed.geojson` / `stats.json` を読み込む
+  - **サブ流域コロプレス**: 指標（炭素密度／森林率／緑被率）で塗り分け。凡例つき。
+  - サブ流域クリックで選択ハイライト＋詳細表示（feature-state）。
+- **サイドパネル**（`components/StatsPanel.tsx`）: 指標セレクタ・カラー凡例・流域全体サマリ、
+  選択サブ流域の面積/森林率/炭素と、ESA WorldCover 標準配色の土地被覆構成。
+- データは `public/data/<region>/` の `watersheds.geojson` / `region.json` を読み込む
   （パイプライン成果物のコピー。将来は Cloudflare R2 配信の PMTiles へ差し替え）。
 
 ## 検証状況

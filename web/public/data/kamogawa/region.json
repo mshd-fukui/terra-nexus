@@ -1,0 +1,42 @@
+{
+  "region": {
+    "name": "kamogawa",
+    "label": "鴨川流域"
+  },
+  "generated": "2026-07-04",
+  "geometry": {
+    "outlet_snapped": {
+      "lon": 135.74139,
+      "lat": 34.94028
+    },
+    "area_ha": 18562.6,
+    "area_km2": 185.63,
+    "subbasin_count": 20
+  },
+  "totals": {
+    "forest_ratio": 0.7734,
+    "green_cover_ratio": 0.796,
+    "carbon_storage_mg_c": 3753924.0,
+    "carbon_density_mg_c_per_ha": 202.2
+  },
+  "indicator_ranges": {
+    "forest_ratio": {
+      "min": 0.079,
+      "max": 0.996
+    },
+    "green_cover_ratio": {
+      "min": 0.245,
+      "max": 1.0
+    },
+    "carbon_density_mg_c_per_ha": {
+      "min": 56.547,
+      "max": 249.419
+    }
+  },
+  "sources": {
+    "dem": "copernicus-glo30",
+    "landcover": "esa-worldcover-2021-v200",
+    "carbon_method": "InVEST Carbon (4-pool lookup)"
+  },
+  "notes": "自然資本は生物物理量。炭素係数は温帯代表値（暫定）。サブ流域は流路合流点で分割。金額換算・NDVI・保水指標は後続バージョンで追加予定。"
+}

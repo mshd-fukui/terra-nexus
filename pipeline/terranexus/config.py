@@ -19,6 +19,7 @@ class DemConfig:
 class DelineationConfig:
     outlet: Tuple[float, float]  # lon, lat
     snap_accum_threshold: int
+    subbasin_accum_threshold: int
 
 
 @dataclass(frozen=True)
@@ -53,6 +54,9 @@ class RegionConfig:
             delineation=DelineationConfig(
                 outlet=tuple(raw["delineation"]["outlet"]),  # type: ignore[arg-type]
                 snap_accum_threshold=int(raw["delineation"]["snap_accum_threshold"]),
+                subbasin_accum_threshold=int(
+                    raw["delineation"]["subbasin_accum_threshold"]
+                ),
             ),
             landcover=LandcoverConfig(
                 source=raw["landcover"]["source"],

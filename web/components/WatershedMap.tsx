@@ -1,21 +1,20 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import maplibregl, {
-  Map as MLMap,
-  LngLatBoundsLike,
-} from "maplibre-gl";
+import maplibregl, { Map as MLMap, LngLatBoundsLike } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { FeatureCollection } from "geojson";
 import { dataUrl } from "@/lib/basePath";
+import type { IndicatorKey, SubBasinProps } from "@/lib/types";
+import { RAMP } from "@/lib/types";
 
 interface Props {
   region: string;
-  onSelect: () => void;
+  indicator: IndicatorKey;
+  ranges: Record<IndicatorKey, { min: number; max: number }> | null;
+  onSelect: (p: SubBasinProps | null) => void;
 }
 
-// 起動時のスタイルは背景のみ（外部依存ゼロ）。地形陰影と流域は load 後に追加する。
-// こうすることで、地形タイルの取得可否に関わらず load が確実に発火し、流域が描画される。
 const BASE_STYLE: maplibregl.StyleSpecification = {
   version: 8,
   sources: {},
@@ -24,7 +23,6 @@ const BASE_STYLE: maplibregl.StyleSpecification = {
   ],
 };
 
-// 地形陰影（AWS Terrain Tiles）を load 後に追加する。
 function addHillshade(map: MLMap) {
   if (map.getSource("terrain-dem")) return;
   map.addSource("terrain-dem", {
@@ -44,38 +42,43 @@ function addHillshade(map: MLMap) {
     paint: {
       "hillshade-shadow-color": "#4a5240",
       "hillshade-highlight-color": "#ffffff",
-      "hillshade-accent-color": "#6b7355",
-      "hillshade-exaggeration": 0.55,
+      "hillshade-exaggeration": 0.5,
     },
   });
 }
 
 function bounds(fc: FeatureCollection): LngLatBoundsLike {
-  let minX = 180,
-    minY = 90,
-    maxX = -180,
-    maxY = -90;
-  const scan = (coords: any) => {
-    if (typeof coords[0] === "number") {
-      minX = Math.min(minX, coords[0]);
-      minY = Math.min(minY, coords[1]);
-      maxX = Math.max(maxX, coords[0]);
-      maxY = Math.max(maxY, coords[1]);
-    } else {
-      coords.forEach(scan);
-    }
+  let minX = 180, minY = 90, maxX = -180, maxY = -90;
+  const scan = (co: any) => {
+    if (typeof co[0] === "number") {
+      minX = Math.min(minX, co[0]); minY = Math.min(minY, co[1]);
+      maxX = Math.max(maxX, co[0]); maxY = Math.max(maxY, co[1]);
+    } else co.forEach(scan);
   };
   fc.features.forEach((f) => scan((f.geometry as any).coordinates));
-  return [
-    [minX, minY],
-    [maxX, maxY],
-  ];
+  return [[minX, minY], [maxX, maxY]];
 }
 
-export default function WatershedMap({ region, onSelect }: Props) {
+// 指標値 -> 塗り色（min..max を緑シーケンシャルへ線形補間する式）
+function fillColorExpr(
+  indicator: IndicatorKey,
+  range: { min: number; max: number }
+): any {
+  const { min, max } = range;
+  const stops: any[] = [];
+  RAMP.forEach((color, i) => {
+    const t = RAMP.length === 1 ? 0 : i / (RAMP.length - 1);
+    stops.push(min + t * (max - min || 1), color);
+  });
+  return ["interpolate", ["linear"], ["get", indicator], ...stops];
+}
+
+export default function WatershedMap({ region, indicator, ranges, onSelect }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MLMap | null>(null);
+  const readyRef = useRef(false);
 
+  // 初期化（1 回だけ）
   useEffect(() => {
     if (!ref.current || mapRef.current) return;
 
@@ -94,36 +97,37 @@ export default function WatershedMap({ region, onSelect }: Props) {
       addHillshade(map);
 
       const fc: FeatureCollection = await fetch(
-        dataUrl(`/data/${region}/watershed.geojson`)
+        dataUrl(`/data/${region}/watersheds.geojson`)
       ).then((r) => r.json());
 
-      map.addSource("watershed", {
-        type: "geojson",
-        data: fc,
-        generateId: true,
-      });
+      map.addSource("subbasins", { type: "geojson", data: fc });
 
       map.addLayer({
-        id: "watershed-fill",
+        id: "sb-fill",
         type: "fill",
-        source: "watershed",
+        source: "subbasins",
         paint: {
-          "fill-color": "#1f7a5a",
+          "fill-color": "#8fbf9f", // 初期色（ranges 到着後に更新）
           "fill-opacity": [
             "case",
             ["boolean", ["feature-state", "selected"], false],
-            0.42,
-            0.24,
+            0.9,
+            0.68,
           ],
         },
       });
       map.addLayer({
-        id: "watershed-line",
+        id: "sb-line",
         type: "line",
-        source: "watershed",
+        source: "subbasins",
         paint: {
-          "line-color": "#0f5f45",
-          "line-width": 2,
+          "line-color": "#2f4a3c",
+          "line-width": [
+            "case",
+            ["boolean", ["feature-state", "selected"], false],
+            2.4,
+            0.6,
+          ],
         },
       });
 
@@ -133,34 +137,63 @@ export default function WatershedMap({ region, onSelect }: Props) {
         /* noop */
       }
 
-      let selectedId: string | number | undefined;
+      let selId: number | undefined;
       const select = (e: maplibregl.MapLayerMouseEvent) => {
-        const id = e.features?.[0]?.id;
-        if (id === undefined) return;
-        if (selectedId !== undefined)
+        const f = e.features?.[0];
+        if (!f || f.id === undefined) return;
+        if (selId !== undefined)
           map.setFeatureState(
-            { source: "watershed", id: selectedId },
+            { source: "subbasins", id: selId },
             { selected: false }
           );
-        selectedId = id;
-        map.setFeatureState({ source: "watershed", id }, { selected: true });
-        onSelect();
+        selId = f.id as number;
+        map.setFeatureState(
+          { source: "subbasins", id: selId },
+          { selected: true }
+        );
+        // MapLibre は GeoJSON の入れ子プロパティを文字列化するため land_cover を復元
+        const props = { ...(f.properties as any) };
+        if (typeof props.land_cover === "string") {
+          props.land_cover = JSON.parse(props.land_cover);
+        }
+        onSelect(props as SubBasinProps);
       };
-
-      map.on("click", "watershed-fill", select);
-      map.on("mouseenter", "watershed-fill", () => {
+      map.on("click", "sb-fill", select);
+      map.on("mouseenter", "sb-fill", () => {
         map.getCanvas().style.cursor = "pointer";
       });
-      map.on("mouseleave", "watershed-fill", () => {
+      map.on("mouseleave", "sb-fill", () => {
         map.getCanvas().style.cursor = "";
       });
+
+      readyRef.current = true;
+      applyColor();
     });
 
     return () => {
       map.remove();
       mapRef.current = null;
+      readyRef.current = false;
     };
-  }, [region, onSelect]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [region]);
+
+  // 指標・レンジが変わったら塗り色を更新
+  function applyColor() {
+    const map = mapRef.current;
+    if (!map || !readyRef.current || !ranges) return;
+    if (!map.getLayer("sb-fill")) return;
+    map.setPaintProperty(
+      "sb-fill",
+      "fill-color",
+      fillColorExpr(indicator, ranges[indicator])
+    );
+  }
+
+  useEffect(() => {
+    applyColor();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [indicator, ranges]);
 
   return <div ref={ref} className="map" />;
 }

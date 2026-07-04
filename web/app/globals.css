@@ -150,6 +150,53 @@ body {
   color: #45514c;
 }
 
+/* 指標セレクタ */
+.seg {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.seg-btn {
+  flex: 1;
+  padding: 7px 4px;
+  font-size: 12px;
+  border: 1px solid rgba(28, 35, 33, 0.14);
+  border-radius: 8px;
+  background: #fff;
+  color: #45514c;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.seg-btn:hover {
+  border-color: #31a354;
+}
+
+.seg-btn.on {
+  background: #1f7a5a;
+  border-color: #1f7a5a;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* カラー凡例 */
+.legend-bar {
+  height: 10px;
+  border-radius: 5px;
+  margin-top: 12px;
+  border: 1px solid rgba(28, 35, 33, 0.08);
+}
+
+.legend-scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #6a746f;
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
 .notes {
   font-size: 11px;
   color: #8a938e;
