@@ -24,7 +24,8 @@
     "green_cover_ratio": 0.796,
     "carbon_storage_mg_c": 3753924.0,
     "carbon_density_mg_c_per_ha": 202.2,
-    "habitat_quality": 0.751
+    "habitat_quality": 0.751,
+    "water_retention": 0.368
   },
   "indicator_ranges": {
     "forest_ratio": {
@@ -42,6 +43,10 @@
     "habitat_quality": {
       "min": 0.093,
       "max": 0.999
+    },
+    "water_retention": {
+      "min": 0.144,
+      "max": 0.449
     }
   },
   "sources": {
@@ -49,5 +54,5 @@
     "landcover": "esa-worldcover-2021-v200",
     "carbon_method": "InVEST Carbon (4-pool lookup)"
   },
-  "notes": "自然資本は生物物理量。炭素係数は温帯代表値（暫定）。サブ流域は流路合流点で分割。金額換算・NDVI・保水指標は後続バージョンで追加予定。"
+  "notes": "自然資本は生物物理量。炭素・保水・生息地質の係数は温帯代表値（暫定）。サブ流域は流路合流点で分割。金額換算・NDVI は後続バージョンで追加予定。"
 }

@@ -94,18 +94,14 @@ function RegionTotals({ region }: { region: RegionSummary }) {
       </div>
       <div className="section-title">流域全体</div>
       <div className="kpis">
-        <Kpi label="森林率" value={`${Math.round(t.forest_ratio * 100)}`} unit="%" />
-        <Kpi label="生息地質" value={t.habitat_quality.toFixed(2)} unit="指数" />
-        <Kpi
-          label="炭素蓄積"
-          value={(t.carbon_storage_mg_c / 1e6).toFixed(2)}
-          unit="Mt C"
-        />
         <Kpi
           label="炭素密度"
           value={`${t.carbon_density_mg_c_per_ha}`}
           unit="Mg C/ha"
         />
+        <Kpi label="生息地質" value={t.habitat_quality.toFixed(2)} unit="指数" />
+        <Kpi label="保水指標" value={t.water_retention.toFixed(2)} unit="指数" />
+        <Kpi label="森林率" value={`${Math.round(t.forest_ratio * 100)}`} unit="%" />
       </div>
     </>
   );
@@ -117,13 +113,13 @@ function SubBasinDetail({ sub }: { sub: SubBasinProps }) {
       <div className="section-title">サブ流域 #{sub.id}</div>
       <div className="kpis">
         <Kpi label="面積" value={`${sub.area_km2}`} unit="km²" />
-        <Kpi label="生息地質" value={sub.habitat_quality.toFixed(2)} unit="指数" />
         <Kpi
           label="炭素密度"
           value={`${sub.carbon_density_mg_c_per_ha}`}
           unit="Mg C/ha"
         />
-        <Kpi label="森林率" value={`${Math.round(sub.forest_ratio * 100)}`} unit="%" />
+        <Kpi label="生息地質" value={sub.habitat_quality.toFixed(2)} unit="指数" />
+        <Kpi label="保水指標" value={sub.water_retention.toFixed(2)} unit="指数" />
       </div>
 
       <div className="section-title">土地被覆構成</div>

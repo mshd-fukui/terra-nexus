@@ -153,12 +153,13 @@ body {
 /* 指標セレクタ */
 .seg {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   margin-top: 4px;
 }
 
 .seg-btn {
-  flex: 1;
+  flex: 1 1 28%;
   padding: 7px 4px;
   font-size: 12px;
   border: 1px solid rgba(28, 35, 33, 0.14);

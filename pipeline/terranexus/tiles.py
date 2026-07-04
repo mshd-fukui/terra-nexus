@@ -64,6 +64,10 @@ def build_terrain_pmtiles(
         return None
 
     mbt = out_path.with_suffix(".mbtiles")
+    # 既存の中間・出力ファイルを掃除（rgbify は既存 mbtiles に追記し、
+    # pmtiles-convert は既存出力を上書きしないため）
+    mbt.unlink(missing_ok=True)
+    out_path.unlink(missing_ok=True)
     try:
         subprocess.run(
             [

@@ -1,0 +1,17 @@
+# 土地被覆クラス別の保水係数（0..1、高いほど水を保持・浸透しやすい）
+# SCS カーブナンバー（USDA、被覆別の流出/浸透特性。代表的な水文土壌群 B を仮定）を土台に、
+# 湿地・水域は「貯留・流下抑制」の観点で高評価に補正した保水指標。
+# 注意: 温帯・土壌群 B 相当の代表値であり暫定。SoilGrids 等の土壌データ導入時に精緻化する。
+# lucode は ESA WorldCover v200 のクラス値。
+lucode,lulc_name,retention,note
+10,Tree cover,0.45,"森林。落葉層と根系で浸透大（CN 低）"
+20,Shrubland,0.40,"低木"
+30,Grassland,0.30,"草地"
+40,Cropland,0.22,"農地。作土で流出やや大"
+50,Built-up,0.06,"市街地。不浸透で流出大（CN 高）"
+60,Bare/sparse,0.12,"裸地・砂礫"
+70,Snow/ice,0.0,"雪氷"
+80,Permanent water,0.85,"水域。水の貯留"
+90,Herbaceous wetland,0.95,"湿地。貯留＋緩やかな流下（洪水緩和の要）"
+95,Mangroves,0.95,"マングローブ"
+100,Moss/lichen,0.35,"蘚苔"

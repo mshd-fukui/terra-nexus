@@ -27,6 +27,7 @@ class SubBasinStats:
     land_cover: LandCover
     carbon: CarbonResult
     habitat_quality: float
+    water_retention: float
 
 
 def _land_cover_list(lc: LandCover) -> List[Dict[str, Any]]:
@@ -56,6 +57,7 @@ def subbasin_feature(s: SubBasinStats) -> Dict[str, Any]:
             "carbon_density_mg_c_per_ha": round(s.carbon.density_mg_c_per_ha, 1),
             "carbon_storage_mg_c": round(s.carbon.total_mg_c, 0),
             "habitat_quality": round(s.habitat_quality, 3),
+            "water_retention": round(s.water_retention, 3),
             "land_cover": _land_cover_list(s.land_cover),
         },
         "geometry": mapping(s.geometry),
@@ -120,6 +122,12 @@ def build_region(
             )
             if total_area_ha
             else 0.0,
+            "water_retention": round(
+                sum(s.water_retention * s.area_ha for s in subs) / total_area_ha,
+                3,
+            )
+            if total_area_ha
+            else 0.0,
         },
         # Web のコロプレス配色レンジ（サブ流域間の指標の分布）
         "indicator_ranges": {
@@ -131,6 +139,7 @@ def build_region(
                 [s.carbon.density_mg_c_per_ha for s in subs]
             ),
             "habitat_quality": _range([s.habitat_quality for s in subs]),
+            "water_retention": _range([s.water_retention for s in subs]),
         },
         "sources": {
             "dem": cfg.dem.source,
@@ -138,8 +147,8 @@ def build_region(
             "carbon_method": "InVEST Carbon (4-pool lookup)",
         },
         "notes": (
-            "自然資本は生物物理量。炭素係数は温帯代表値（暫定）。"
-            "サブ流域は流路合流点で分割。金額換算・NDVI・保水指標は後続バージョンで追加予定。"
+            "自然資本は生物物理量。炭素・保水・生息地質の係数は温帯代表値（暫定）。"
+            "サブ流域は流路合流点で分割。金額換算・NDVI は後続バージョンで追加予定。"
         ),
     }
 
