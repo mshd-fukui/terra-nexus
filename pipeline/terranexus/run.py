@@ -25,6 +25,7 @@ from .aggregate import (
     write_region,
     write_watersheds,
 )
+from .tiles import build_pmtiles
 from .geo import geographic_area_ha
 
 _PKG_ROOT = Path(__file__).resolve().parent.parent  # pipeline/
@@ -69,6 +70,7 @@ def main() -> None:
         )
 
     write_watersheds(subs, work / "watersheds.geojson")
+    build_pmtiles(work / "watersheds.geojson", work / "watersheds.pmtiles")
     region = build_region(cfg, dl, subs)
     write_region(region, work / "region.json")
 

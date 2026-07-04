@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import maplibregl, { Map as MLMap, LngLatBoundsLike } from "maplibre-gl";
+import maplibregl, { Map as MLMap } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import type { FeatureCollection } from "geojson";
+import { Protocol } from "pmtiles";
 import { dataUrl } from "@/lib/basePath";
 import type { IndicatorKey, SubBasinProps } from "@/lib/types";
 import { RAMP } from "@/lib/types";
@@ -12,7 +12,19 @@ interface Props {
   region: string;
   indicator: IndicatorKey;
   ranges: Record<IndicatorKey, { min: number; max: number }> | null;
+  bbox: [number, number, number, number] | null;
   onSelect: (p: SubBasinProps | null) => void;
+}
+
+const SRC = "subbasins";
+const SRC_LAYER = "subbasins";
+
+// pmtiles プロトコルを一度だけ登録
+let pmtilesRegistered = false;
+function ensurePmtiles() {
+  if (pmtilesRegistered) return;
+  maplibregl.addProtocol("pmtiles", new Protocol().tile);
+  pmtilesRegistered = true;
 }
 
 const BASE_STYLE: maplibregl.StyleSpecification = {
@@ -47,19 +59,6 @@ function addHillshade(map: MLMap) {
   });
 }
 
-function bounds(fc: FeatureCollection): LngLatBoundsLike {
-  let minX = 180, minY = 90, maxX = -180, maxY = -90;
-  const scan = (co: any) => {
-    if (typeof co[0] === "number") {
-      minX = Math.min(minX, co[0]); minY = Math.min(minY, co[1]);
-      maxX = Math.max(maxX, co[0]); maxY = Math.max(maxY, co[1]);
-    } else co.forEach(scan);
-  };
-  fc.features.forEach((f) => scan((f.geometry as any).coordinates));
-  return [[minX, minY], [maxX, maxY]];
-}
-
-// 指標値 -> 塗り色（min..max を緑シーケンシャルへ線形補間する式）
 function fillColorExpr(
   indicator: IndicatorKey,
   range: { min: number; max: number }
@@ -73,14 +72,20 @@ function fillColorExpr(
   return ["interpolate", ["linear"], ["get", indicator], ...stops];
 }
 
-export default function WatershedMap({ region, indicator, ranges, onSelect }: Props) {
+export default function WatershedMap({
+  region,
+  indicator,
+  ranges,
+  bbox,
+  onSelect,
+}: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MLMap | null>(null);
   const readyRef = useRef(false);
 
-  // 初期化（1 回だけ）
   useEffect(() => {
     if (!ref.current || mapRef.current) return;
+    ensurePmtiles();
 
     const map = new maplibregl.Map({
       container: ref.current,
@@ -92,22 +97,26 @@ export default function WatershedMap({ region, indicator, ranges, onSelect }: Pr
     mapRef.current = map;
     map.addControl(new maplibregl.NavigationControl(), "bottom-right");
 
-    map.on("load", async () => {
+    map.on("load", () => {
       map.resize();
       addHillshade(map);
 
-      const fc: FeatureCollection = await fetch(
-        dataUrl(`/data/${region}/watersheds.geojson`)
-      ).then((r) => r.json());
-
-      map.addSource("subbasins", { type: "geojson", data: fc });
+      const url = `pmtiles://${window.location.origin}${dataUrl(
+        `/data/${region}/watersheds.pmtiles`
+      )}`;
+      map.addSource(SRC, {
+        type: "vector",
+        url,
+        promoteId: { [SRC_LAYER]: "id" },
+      });
 
       map.addLayer({
         id: "sb-fill",
         type: "fill",
-        source: "subbasins",
+        source: SRC,
+        "source-layer": SRC_LAYER,
         paint: {
-          "fill-color": "#8fbf9f", // 初期色（ranges 到着後に更新）
+          "fill-color": "#8fbf9f",
           "fill-opacity": [
             "case",
             ["boolean", ["feature-state", "selected"], false],
@@ -119,7 +128,8 @@ export default function WatershedMap({ region, indicator, ranges, onSelect }: Pr
       map.addLayer({
         id: "sb-line",
         type: "line",
-        source: "subbasins",
+        source: SRC,
+        "source-layer": SRC_LAYER,
         paint: {
           "line-color": "#2f4a3c",
           "line-width": [
@@ -131,27 +141,20 @@ export default function WatershedMap({ region, indicator, ranges, onSelect }: Pr
         },
       });
 
-      try {
-        map.fitBounds(bounds(fc), { padding: 60, duration: 0 });
-      } catch {
-        /* noop */
-      }
-
-      let selId: number | undefined;
+      let selId: number | string | undefined;
       const select = (e: maplibregl.MapLayerMouseEvent) => {
         const f = e.features?.[0];
         if (!f || f.id === undefined) return;
         if (selId !== undefined)
           map.setFeatureState(
-            { source: "subbasins", id: selId },
+            { source: SRC, sourceLayer: SRC_LAYER, id: selId },
             { selected: false }
           );
-        selId = f.id as number;
+        selId = f.id;
         map.setFeatureState(
-          { source: "subbasins", id: selId },
+          { source: SRC, sourceLayer: SRC_LAYER, id: selId },
           { selected: true }
         );
-        // MapLibre は GeoJSON の入れ子プロパティを文字列化するため land_cover を復元
         const props = { ...(f.properties as any) };
         if (typeof props.land_cover === "string") {
           props.land_cover = JSON.parse(props.land_cover);
@@ -168,6 +171,7 @@ export default function WatershedMap({ region, indicator, ranges, onSelect }: Pr
 
       readyRef.current = true;
       applyColor();
+      applyBounds();
     });
 
     return () => {
@@ -178,11 +182,9 @@ export default function WatershedMap({ region, indicator, ranges, onSelect }: Pr
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [region]);
 
-  // 指標・レンジが変わったら塗り色を更新
   function applyColor() {
     const map = mapRef.current;
-    if (!map || !readyRef.current || !ranges) return;
-    if (!map.getLayer("sb-fill")) return;
+    if (!map || !readyRef.current || !ranges || !map.getLayer("sb-fill")) return;
     map.setPaintProperty(
       "sb-fill",
       "fill-color",
@@ -190,10 +192,27 @@ export default function WatershedMap({ region, indicator, ranges, onSelect }: Pr
     );
   }
 
+  function applyBounds() {
+    const map = mapRef.current;
+    if (!map || !readyRef.current || !bbox) return;
+    map.fitBounds(
+      [
+        [bbox[0], bbox[1]],
+        [bbox[2], bbox[3]],
+      ],
+      { padding: 60, duration: 0 }
+    );
+  }
+
   useEffect(() => {
     applyColor();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [indicator, ranges]);
+
+  useEffect(() => {
+    applyBounds();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bbox]);
 
   return <div ref={ref} className="map" />;
 }

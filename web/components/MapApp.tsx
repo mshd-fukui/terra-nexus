@@ -33,6 +33,7 @@ export default function MapApp() {
         region={REGION}
         indicator={indicator}
         ranges={region?.indicator_ranges ?? null}
+        bbox={region?.geometry.bbox ?? null}
         onSelect={setSelected}
       />
       <StatsPanel

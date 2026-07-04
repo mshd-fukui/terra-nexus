@@ -11,7 +11,13 @@
     },
     "area_ha": 18562.6,
     "area_km2": 185.63,
-    "subbasin_count": 20
+    "subbasin_count": 20,
+    "bbox": [
+      135.70194,
+      34.93972,
+      135.85667,
+      35.18028
+    ]
   },
   "totals": {
     "forest_ratio": 0.7734,

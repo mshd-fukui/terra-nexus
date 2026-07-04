@@ -39,3 +39,6 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# Web が配信する PMTiles は追跡する
+!web/public/data/**/*.pmtiles

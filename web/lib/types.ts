@@ -29,6 +29,7 @@ export interface RegionSummary {
     area_ha: number;
     area_km2: number;
     subbasin_count: number;
+    bbox: [number, number, number, number]; // W,S,E,N（地図の初期表示範囲）
   };
   totals: {
     forest_ratio: number;

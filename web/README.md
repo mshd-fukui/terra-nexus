@@ -23,8 +23,9 @@ npm run dev      # http://localhost:3000
   - サブ流域クリックで選択ハイライト＋詳細表示（feature-state）。
 - **サイドパネル**（`components/StatsPanel.tsx`）: 指標セレクタ・カラー凡例・流域全体サマリ、
   選択サブ流域の面積/森林率/炭素と、ESA WorldCover 標準配色の土地被覆構成。
-- データは `public/data/<region>/` の `watersheds.geojson` / `region.json` を読み込む
-  （パイプライン成果物のコピー。将来は Cloudflare R2 配信の PMTiles へ差し替え）。
+- データは `public/data/<region>/` の **`watersheds.pmtiles`**（ベクタタイル）を
+  pmtiles プロトコルで range 読みし、`region.json`（サマリ・指標レンジ・bbox）を fetch する。
+  PMTiles は単一ファイルで、静的ホスティング（GitHub Pages / Cloudflare R2）がそのまま配信できる。
 
 ## 検証状況
 

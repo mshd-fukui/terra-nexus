@@ -79,6 +79,7 @@ def build_region(
     cfg: RegionConfig, dl: Delineation, subs: List[SubBasinStats]
 ) -> Dict[str, Any]:
     total_area_ha = sum(s.area_ha for s in subs)
+    w, s_, e, n = dl.basin.bounds  # 地図の初期表示範囲（PMTiles には座標情報が要る）
     total_carbon = sum(s.carbon.total_mg_c for s in subs)
     # 面積加重平均
     forest_w = (
@@ -102,6 +103,7 @@ def build_region(
             "area_ha": round(total_area_ha, 1),
             "area_km2": round(total_area_ha / 100, 2),
             "subbasin_count": len(subs),
+            "bbox": [round(w, 5), round(s_, 5), round(e, 5), round(n, 5)],
         },
         "totals": {
             "forest_ratio": round(forest_w, 4),
